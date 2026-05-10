@@ -1,6 +1,7 @@
 from tkinter import *
 from PIL import Image, ImageTk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+import sqlite3
 class CourseClass:
     def __init__(self, root):
         self.root = root
@@ -40,7 +41,7 @@ class CourseClass:
         self.txt_description.place(x=150, y=180,width=500, height=130)
 
         # --- Buttons ---
-        self.btn_add=Button(self.root, text="Save", font=("goudy old style", 15, "bold"), bg="#2196f3", fg="white", cursor="hand2")
+        self.btn_add=Button(self.root, text="Save", font=("goudy old style", 15, "bold"), bg="#2196f3", fg="white", cursor="hand2",command=self.add)
         self.btn_add.place(x=150, y=400, width=110, height=40)
         self.btn_update=Button(self.root, text="Update", font=("goudy old style", 15, "bold"), bg="#4caf50", fg="white", cursor="hand2")
         self.btn_update.place(x=270, y=400, width=110, height=40)
@@ -87,11 +88,59 @@ class CourseClass:
         self.Course_Table.column("duration", width=100)
         self.Course_Table.column("charges", width=100)
         self.Course_Table.column("description", width=150)
-
         self.Course_Table.pack(fill=BOTH, expand=1)
+        self.Course_Table.bind("<ButtonRelease-1>", self.get_data)
+        self.show()
         
+# ======================================================
+    def get_data(self,ev):
+        r = self.Course_Table.focus()
+        content = self.Course_Table.item(r)
+        row = content["values"]
+        #print(row)
+        self.var_course_name.set(row[1])
+        self.var_duration.set(row[2])
+        self.var_charges.set(row[3])
+        self.txt_description.delete('1.0', END)
+        self.txt_description.insert(END, row[4])
         
-        
+    def add(self):
+        con = sqlite3.connect(database="rms.db")
+        cur = con.cursor()
+        try:
+            if self.var_course_name.get() == "":
+                messagebox.showerror("Error", "Course Name should be required", parent=self.root)
+            else:
+                cur.execute("select * from course where name=?", (self.var_course_name.get(),))
+                row = cur.fetchone()
+                if row != None:
+                    messagebox.showerror("Error", "Course Name already present, try different", parent=self.root)
+                else:
+                    cur.execute("insert into course (name, duration, charges, description) values(?, ?, ?, ?)",(
+                        self.var_course_name.get(),
+                        self.var_duration.get(),
+                        self.var_charges.get(),
+                        self.txt_description.get('1.0', END)
+                    )) 
+                    con.commit()
+                    messagebox.showinfo("Success", "Course added successfully", parent=self.root)
+                    self.show()
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to {str(ex)}")
+    
+    def show(self):
+        con = sqlite3.connect(database="rms.db")
+        cur = con.cursor()
+        try:
+            cur.execute("select * from course")
+            rows = cur.fetchall()
+            self.Course_Table.delete(*self.Course_Table.get_children())
+            for row in rows:
+                self.Course_Table.insert('', END, values=row)
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to {str(ex)}")
+
+
 if __name__ == "__main__":
     root = Tk()
     obj = CourseClass(root)
