@@ -54,7 +54,8 @@ class CourseClass:
         self.var_search = StringVar()
         lbl_search_courseName = Label(self.root, text="Course Name", font=("goudy old style", 15, "bold"), bg="white").place(x=720, y=60)
         txt_search_courseName = Entry(self.root, textvariable=self.var_search, font=("goudy old style", 15, "bold"), bg="lightyellow").place(x=870, y=60, width=180)
-        btn_search=Button(self.root, text="Search", font=("goudy old style", 15, "bold"), bg="#03a9f4", fg="white", cursor="hand2").place(x=1070, y=60, width=120, height=28)
+        btn_search=Button(self.root, text="Search", font=("goudy old style", 15, "bold"), bg="#03a9f4", fg="white", cursor="hand2",command=self.search)
+        btn_search.place(x=1070, y=60, width=120, height=28)
         
         # --- Content ---
         self.C_Frame = Frame(self.root, bd=2, relief=RIDGE)
@@ -126,18 +127,24 @@ class CourseClass:
             
              
         
-    def get_data(self,ev):
-        self.txt_course_name.config(state='readonly')
-        self.txt_course_name
+    def get_data(self, ev):
         r = self.Course_Table.focus()
         content = self.Course_Table.item(r)
         row = content["values"]
-        #print(row)
+
+        if len(row) == 0:
+         return
+
+        self.txt_course_name.config(state=NORMAL)
+
         self.var_course_name.set(row[1])
         self.var_duration.set(row[2])
         self.var_charges.set(row[3])
+
         self.txt_description.delete('1.0', END)
         self.txt_description.insert(END, row[4])
+
+        self.txt_course_name.config(state='readonly')
         
     def add(self):
         con = sqlite3.connect(database="rms.db")
@@ -200,7 +207,31 @@ class CourseClass:
                 self.Course_Table.insert('', END, values=row)
         except Exception as ex:
             messagebox.showerror("Error", f"Error due to {str(ex)}")
+    
+    def search(self):
+        con = sqlite3.connect(database="rms.db")
+        cur = con.cursor()
 
+        try:
+            search_value = self.var_search.get().strip()
+
+            cur.execute(
+            "SELECT * FROM course WHERE name LIKE ?",
+            ("%" + search_value + "%",)
+            )
+
+            rows = cur.fetchall()
+
+            self.Course_Table.delete(*self.Course_Table.get_children())
+
+            if len(rows) != 0:
+                for row in rows:
+                    self.Course_Table.insert('', END, values=row)
+            else:
+                messagebox.showerror("Error", "No record found", parent=self.root)
+
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to {str(ex)}")
 
 if __name__ == "__main__":
     root = Tk()
