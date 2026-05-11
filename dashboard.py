@@ -1,6 +1,7 @@
 from tkinter import *
 from PIL import Image, ImageTk
 from course import CourseClass
+from student import studentClass
 
 
 class RMS:
@@ -57,17 +58,17 @@ class RMS:
         gap = 20
 
         buttons = [
-            "Course",
-            "Student",
-            "Result",
-            "View Results",
-            "Logout",
-            "Exit"
+            ("Course", self.add_course),
+            ("Student", self.add_student),
+            ("Result", None),
+            ("View Results", None),
+            ("Logout", None),
+            ("Exit", self.root.destroy)
         ]
 
         x = 20
 
-        for text in buttons:
+        for text, cmd in buttons:
             btn = Button(
                 M_Frame,
                 text=text,
@@ -77,7 +78,7 @@ class RMS:
                 cursor="hand2",
                 bd=2,
                 relief=RIDGE,
-                command=self.add_course 
+                command=cmd
             )
 
             btn.place(
@@ -185,6 +186,10 @@ class RMS:
     def add_course(self):
         self.new_win = Toplevel(self.root)
         self.new_obj = CourseClass(self.new_win)
+    
+    def add_student(self):
+        self.new_win = Toplevel(self.root)
+        self.new_obj = studentClass(self.new_win)
 # ==========================================================
 # Main
 # ==========================================================
