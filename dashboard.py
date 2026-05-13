@@ -2,7 +2,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 from course import CourseClass
 from student import studentClass
-
+from result import resultClass
 
 class RMS:
     def __init__(self, root):
@@ -60,7 +60,7 @@ class RMS:
         buttons = [
             ("Course", self.add_course),
             ("Student", self.add_student),
-            ("Result", None),
+            ("Result", self.add_result),
             ("View Results", None),
             ("Logout", None),
             ("Exit", self.root.destroy)
@@ -104,7 +104,6 @@ class RMS:
             bg="white",
             bd=0
         )
-
         self.lbl_bg.place(x=520, y=220)
 
         # ======================================================
@@ -190,6 +189,10 @@ class RMS:
     def add_student(self):
         self.new_win = Toplevel(self.root)
         self.new_obj = studentClass(self.new_win)
+    
+    def add_result(self):
+        self.new_win = Toplevel(self.root)
+        self.new_obj = resultClass(self.new_win)
 # ==========================================================
 # Main
 # ==========================================================
